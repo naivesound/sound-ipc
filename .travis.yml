@@ -7,6 +7,10 @@ os:
 matrix:
   include:
     - os: linux
+      addons:
+        apt:
+          packages:
+            - libasound2-dev
       compiler: gcc
       env: SOUND=sound.alsa
     - os: linux
