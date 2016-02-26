@@ -14,10 +14,16 @@ matrix:
       compiler: gcc
       env: SOUND=sound.alsa
     - os: linux
-      compiler: i586-mingw32msvc-g++
+      compiler: i686-w64-mingw32-g++
+      addons:
+        apt:
+          packages:
+            - binutils-mingw-w64-i686
+            - gcc-mingw-w64-i686
+            - g++-mingw-w64-i686
       env:
         - SOUND=sound.exe
-        - WINCXX=i586-mingw32msvc-g++
+        - WINCXX=i686-w64-mingw32-g++
     - os: osx
       env: SOUND=sound.mac
 
