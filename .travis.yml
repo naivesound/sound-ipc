@@ -18,6 +18,7 @@ matrix:
       addons:
         apt:
           packages:
+            - binutils-mingw-w64-i686
             - gcc-mingw-w64-i686
             - g++-mingw-w64-i686
       env:
