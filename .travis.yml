@@ -14,7 +14,7 @@ matrix:
       compiler: gcc
       env: SOUND=sound.alsa
     - os: linux
-      compiler: i586-mingw32msvc-gcc
+      compiler: i586-mingw32msvc-g++
       env:
         - SOUND=sound.exe
     - os: osx
