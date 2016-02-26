@@ -18,7 +18,7 @@ matrix:
       addons:
         apt:
           packages:
-            - g++-mingw-w64
+            - g++-mingw-w64-i686
       env:
         - SOUND=sound.exe
         - WINCXX=i686-w64-mingw32-g++
