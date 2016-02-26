@@ -28,4 +28,6 @@ matrix:
       env: SOUND=sound.mac
 
 script:
+  - ls /usr -l || true
+  - ls /usr/i686-w64-mingw32/include -l || true
   - make $SOUND && ls -l sound.*
