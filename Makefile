@@ -1,6 +1,7 @@
 WINCXX ?= $(CXX)
 
 SRCS := main.cpp RtAudio.cpp RtMidi.cpp
+STATIC := -static-libgcc -static-libstdc++
 
 # Cross compile on Ubuntu: CXX=i686-w64-mingw32-g++ make sound.exe
 
