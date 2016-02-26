@@ -17,7 +17,7 @@ matrix:
       compiler: gcc
       env:
         - SOUND=sound.exe
-        - CXX=i686-w64-mingw32-g++
+        - WINCXX=i686-w64-mingw32-g++
     - os: osx
       env: SOUND=sound.mac
 
