@@ -15,11 +15,11 @@ matrix:
       env: SOUND=sound.alsa
     - os: linux
       compiler: gcc
-      env: SOUND=sound.exe
-      env: CXX=i686-w64-mingw32-g++
+      env:
+        - SOUND=sound.exe
+        - CXX=i686-w64-mingw32-g++
     - os: osx
       env: SOUND=sound.mac
 
 script:
-  - echo $SOUND
-  - make $SOUND
+  - make $SOUND && ls -l sound.*
