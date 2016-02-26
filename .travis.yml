@@ -21,4 +21,5 @@ matrix:
       env: SOUND=sound.mac
 
 script:
+  - echo $SOUND
   - make $SOUND
