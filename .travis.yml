@@ -1,0 +1,24 @@
+language: cpp
+
+os:
+  - linux
+  - osx
+
+matrix:
+  include:
+    - os: linux
+      sudo: required
+      dist: trusty
+      compiler: gcc
+      env: SOUND=sound.alsa
+    - os: linux
+      sudo: required
+      dist: trusty
+      compiler: gcc
+      env: SOUND=sound.exe
+      env: CXX=i686-w64-mingw32-g++
+    - os: osx
+      env: SOUND=sound.mac
+
+script:
+  - make $SOUND
