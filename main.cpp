@@ -10,6 +10,8 @@
 #include <cstdlib>
 #include <cstring>
 
+#include <pthread.h>
+
 #include "RtAudio.h"
 
 using namespace std;
