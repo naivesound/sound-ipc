@@ -1,3 +1,4 @@
+#define _WIN32_WINNT 0x0600
 #include <unistd.h>
 #include <sys/types.h> 
 #ifdef __WIN32__
@@ -12,7 +13,11 @@
 
 #include "RtAudio.h"
 
-#define USE_PTHREAD __WIN32__
+#define USE_PTHREAD !__WIN32__
+
+#if !USE_PTHREAD
+#include <winbase.h>
+#endif
 
 using namespace std;
 
@@ -170,6 +175,9 @@ static int audio(bool in, int argc, char *argv[]) {
 	pthread_cond_init(&data.consume, NULL);
 	pthread_cond_init(&data.produce, NULL);
 #else
+	InitializeCriticalSection(&data.mutex);
+	InitializeConditionVariable(&data.consume);
+	InitializeConditionVariable(&data.produce);
 #endif
 
 	if (port != 0) {
@@ -224,7 +232,7 @@ static int audio(bool in, int argc, char *argv[]) {
 #if USE_PTHREAD
 		pthread_mutex_lock(&data.mutex);
 #else
-		EnterCriticalSection(&data->mutex);
+		EnterCriticalSection(&data.mutex);
 #endif
 		memcpy(data.buffer, buf, data.bufsz);
 		data.ready = true;
@@ -237,9 +245,9 @@ static int audio(bool in, int argc, char *argv[]) {
 #else
 		WakeConditionVariable(&data.consume);
 		while (data.ready) {
-			SleepConditionVariableCS(&data.produce, &data.mutex);
+			SleepConditionVariableCS(&data.produce, &data.mutex, INFINITE);
 		}
-		LeaveCriticalSection(&data->mutex);
+		LeaveCriticalSection(&data.mutex);
 #endif
 	}
 
