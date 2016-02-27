@@ -10,18 +10,25 @@
 #include <cstdlib>
 #include <cstring>
 
-#include <pthread.h>
-
 #include "RtAudio.h"
+
+#define USE_PTHREAD __WIN32__
 
 using namespace std;
 
 struct audio_data {
 	bool in;
 	int fd;
+#if USE_PTHREAD
 	pthread_mutex_t mutex;
 	pthread_cond_t produce;
 	pthread_cond_t consume;
+#else
+	CRITICAL_SECTION mutex;
+	CONDITION_VARIABLE produce;
+	CONDITION_VARIABLE consume;
+#endif
+	bool ready;
 	size_t bufsz;
 	void *buffer;
 };
@@ -29,15 +36,30 @@ struct audio_data {
 static int audio_cb(void *out, void *in, unsigned int frames, double time, RtAudioStreamStatus status, void *context) {
 	struct audio_data *data = (struct audio_data *) context;
 
+#if USE_PTHREAD
 	pthread_mutex_lock(&data->mutex);
 	pthread_cond_signal(&data->produce);
-	pthread_cond_wait(&data->consume, &data->mutex);
+	while (!data->ready) {
+		pthread_cond_wait(&data->consume, &data->mutex);
+	}
+#else
+	EnterCriticalSection(&data->mutex);
+	WakeConditionVariable(&data->produce);
+	while (!data->ready) {
+		SleepConditionVariableCS(&data->consume, &data->mutex, INFINITE);
+	}
+#endif
 	if (data->in) {
 		memcpy(data->buffer, in, data->bufsz);
 	} else {
 		memcpy(out, data->buffer, data->bufsz);
 	}
+	data->ready = false;
+#if USE_PTHREAD
 	pthread_mutex_unlock(&data->mutex);
+#else
+	LeaveCriticalSection(&data->mutex);
+#endif
 	return 0;
 }
 
@@ -143,9 +165,12 @@ static int audio(bool in, int argc, char *argv[]) {
 	data.buffer = malloc(data.bufsz);
 	data.in = in;
 	data.fd = 0;
+#if USE_PTHREAD
 	pthread_mutex_init(&data.mutex, NULL);
 	pthread_cond_init(&data.consume, NULL);
 	pthread_cond_init(&data.produce, NULL);
+#else
+#endif
 
 	if (port != 0) {
 #ifdef __WIN32__
@@ -180,7 +205,6 @@ static int audio(bool in, int argc, char *argv[]) {
 	char *buf = (char *) malloc(data.bufsz);
 
 	for (;;) {
-		pthread_mutex_lock(&data.mutex);
 		int sz = data.bufsz;
 		int offset = 0;
 		char *p = buf;
@@ -197,10 +221,26 @@ static int audio(bool in, int argc, char *argv[]) {
 			sz = sz - n;
 			offset = offset + n;
 		}
+#if USE_PTHREAD
+		pthread_mutex_lock(&data.mutex);
+#else
+		EnterCriticalSection(&data->mutex);
+#endif
 		memcpy(data.buffer, buf, data.bufsz);
+		data.ready = true;
+#if USE_PTHREAD
 		pthread_cond_signal(&data.consume);
-		pthread_cond_wait(&data.produce, &data.mutex);
+		while (data.ready) {
+			pthread_cond_wait(&data.produce, &data.mutex);
+		}
 		pthread_mutex_unlock(&data.mutex);
+#else
+		WakeConditionVariable(&data.consume);
+		while (data.ready) {
+			SleepConditionVariableCS(&data.produce, &data.mutex);
+		}
+		LeaveCriticalSection(&data->mutex);
+#endif
 	}
 
 	free(buf);

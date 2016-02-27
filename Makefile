@@ -12,10 +12,10 @@ all:
 	@echo make sound.mac
 
 sound.alsa: $(SRCS)
-	$(CXX) -D__LINUX_ALSA__ $^ -o $@ -lasound -pthread
+	$(CXX) -std=c++0x -D__LINUX_ALSA__ $^ -o $@ -lasound -pthread
 
 sound.exe: $(SRCS)
-	$(WINCXX) -D__WINDOWS_WASAPI__ -I. $^ -o $@ -lole32 -lm -lksuser -lws2_32 -lpthread
+	$(WINCXX) -D__WINDOWS_WASAPI__ -I. $^ -o $@ -lole32 -lm -lksuser -lws2_32
 
 sound.mac: $(SRCS)
 	$(CXX) -D__MACOSX_CORE__ $^ -o $@ -framework CoreAudio -framework CoreMIDI -framework CoreFoundation -pthread

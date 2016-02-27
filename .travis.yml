@@ -14,8 +14,6 @@ matrix:
       compiler: gcc
       env: SOUND=sound.alsa
     - os: linux
-      sudo: required
-      distro: trusty
       compiler: i686-w64-mingw32-g++
       addons:
         apt:
